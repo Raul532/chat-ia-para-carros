@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Sobre Carros - IA</title>
+    
+    <!-- Carrega o Tailwind CSS para estilização rápida e moderna -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configuração do Tailwind para o tema escuro e fontes -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'], // Fonte moderna
+                    },
+                },
+            },
+        };
+    </script>
+    
+    <!-- Estilos personalizados -->
+    <style>
+        /* Estilizando a barra de rolagem para um visual mais temático */
+        #chat-area::-webkit-scrollbar {
+            width: 8px;
+        }
+        #chat-area::-webkit-scrollbar-track {
+            background: #27272a; /* zinc-800 */
+        }
+        #chat-area::-webkit-scrollbar-thumb {
+            background-color: #dc2626; /* red-600 */
+            border-radius: 20px;
+        }
+        
+        /* Garante que o layout ocupe a tela toda no celular */
+        body, html {
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="bg-zinc-900 text-gray-100 font-sans flex items-center justify-center min-h-screen p-4">
+
+    <!-- Container principal do chat -->
+    <div class="w-full max-w-2xl bg-zinc-800 rounded-xl shadow-2xl flex flex-col overflow-hidden border border-zinc-700" style="height: 85vh;">
+
+        <!-- Cabeçalho -->
+        <header class="p-4 border-b border-zinc-700 flex items-center justify-center gap-3 bg-zinc-800">
+            <!-- Ícone de carro (SVG) -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-red-600">
+                <path d="M5.121 1.042a2.25 2.25 0 013.29 0l2.03 2.03a.75.75 0 01-1.06 1.06l-2.03-2.03a.75.75 0 00-1.06 0l-2.03 2.03a.75.75 0 01-1.06-1.06l2.03-2.03zM11.47 7.234a.75.75 0 01-1.06 0l-2.03-2.03a.75.75 0 011.06-1.06l2.03 2.03a.75.75 0 010 1.06zM17.828 1.042a2.25 2.25 0 013.29 0l2.03 2.03a.75.75 0 11-1.06 1.06l-2.03-2.03a.75.75 0 00-1.06 0l-2.03 2.03a.75.75 0 11-1.06-1.06l2.03-2.03zM11.47 13.525a.75.75 0 01-1.06 0l-2.03-2.03a.75.75 0 011.06-1.06l2.03 2.03a.75.75 0 010 1.06zM3.75 9.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25v6.75a2.25 2.25 0 01-2.25 2.25h-5.25a.75.75 0 010-1.5h5.25a.75.75 0 00.75-.75v-6.75a.75.75 0 00-.75-.75H6a.75.75 0 00-.75.75v6.75a.75.75 0 00.75.75H9a.75.75 0 010 1.5H6a2.25 2.25 0 01-2.25-2.25V9.75z" />
+                <path fill-rule="evenodd" d="M11.25 18.75a1.5 1.5 0 100 3 1.5 1.5 0 000-3zM3 18.75a1.5 1.5 0 100 3 1.5 1.5 0 000-3zM16.5 21.75a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0z" clip-rule="evenodd" />
+            </svg>
+            <h1 class="text-xl font-bold text-gray-100">Especialista em Carros IA</h1>
+        </header>
+
+        <!-- Área do Chat -->
+        <div id="chat-area" class="flex-1 p-4 space-y-4 overflow-y-auto flex flex-col">
+            <!-- Mensagem inicial da IA -->
+            <div class="flex justify-start">
+                <div class="bg-zinc-700 p-3 rounded-lg max-w-xs md:max-w-md shadow">
+                    <p>Olá! Sou seu especialista em carros. Pergunte-me qualquer coisa sobre o mundo automotivo!</p>
+                </div>
+            </div>
+            <!-- As mensagens de chat aparecerão aqui -->
+        </div>
+
+        <!-- Área de Carregamento -->
+        <div id="loading-indicator" class="p-4 text-center text-sm text-gray-400 hidden">
+            <p>Digitando...</p>
+        </div>
+
+        <!-- Formulário de Entrada -->
+        <form id="chat-form" class="p-4 border-t border-zinc-700 bg-zinc-800">
+            <div class="flex gap-3">
+                <input 
+                    type="text" 
+                    id="message-input"
+                    placeholder="Qual é o carro mais rápido do mundo?" 
+                    class="flex-1 bg-zinc-700 border border-zinc-600 rounded-lg p-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all"
+                    autocomplete="off"
+                >
+                <button 
+                    type="submit" 
+                    id="send-button"
+                    class="bg-red-600 text-white font-semibold p-3 rounded-lg hover:bg-red-700 transition-colors disabled:bg-zinc-500 disabled:cursor-not-allowed flex items-center justify-center w-24"
+                >
+                    Perguntar
+                </button>
+            </div>
+        </form>
+
+        <!-- Rodapé discreto com os nomes -->
+        <footer class="p-2 text-center bg-zinc-800">
+            <p class="text-xs text-zinc-600">IA por Raul Menezes & Celio Augusto</p>
+        </footer>
+
+    </div>
+
+    <script>
+        // --- Seletores de Elementos DOM ---
+        const chatForm = document.getElementById('chat-form');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const chatArea = document.getElementById('chat-area');
+        const loadingIndicator = document.getElementById('loading-indicator');
+    
+        // ====================================================================
+        // 
+        // ATENÇÃO: NUNCA COLOQUE SUA CHAVE DE API REAL AQUI!
+        // Esta chave deve ficar em um servidor (backend) para ser seguro.
+        // 
+        // ====================================================================
+        const apiKey = "AIzaSyC39ygMIdTit2RB021zhyOWB-S41mf4q88"; 
+        
+        // URL da API do Gemini
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+    
+        // Instrução do sistema (PROMPT CORRIGIDO)
+        const systemPrompt = "Você é um especialista em carros de classe mundial. Sua única função é responder perguntas sobre carros, marcas, mecânica ou história automotiva. Se o usuário perguntar sobre QUALQUER outro assunto (como culinária, esportes, história, etc.), recuse educadamente e lembre-o que você só fala sobre carros. Ao responder sobre carros, seja curto e conciso e termine com a frase exata: 'deseja mais detalhes?'";
+    
+        // --- Funções ---
+    
+        /**
+         * Adiciona uma mensagem à área de chat.
+         * @param {string} sender - 'user' (usuário) ou 'ia' (inteligência artificial).
+         * @param {string} text - O texto da mensagem.
+         */
+        function addMessageToChat(sender, text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('flex');
+    
+            const messageBubble = document.createElement('div');
+            messageBubble.classList.add('p-3', 'rounded-lg', 'max-w-xs', 'md:max-w-md', 'shadow');
+            messageBubble.textContent = text;
+    
+            if (sender === 'user') {
+                messageDiv.classList.add('justify-end');
+                messageBubble.classList.add('bg-red-600', 'text-white');
+            } else {
+                messageDiv.classList.add('justify-start');
+                messageBubble.classList.add('bg-zinc-700', 'text-gray-100');
+            }
+    
+            messageDiv.appendChild(messageBubble);
+            chatArea.appendChild(messageDiv);
+            
+            // Rola o chat para a mensagem mais recente
+            scrollChatToBottom();
+        }
+    
+        /**
+         * Rola a área de chat para o final.
+         */
+        function scrollChatToBottom() {
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+    
+        /**
+         * Habilita ou desabilita o formulário de entrada.
+         * @param {boolean} disabled - True para desabilitar, false para habilitar.
+         */
+        function setFormDisabled(disabled) {
+            messageInput.disabled = disabled;
+            sendButton.disabled = disabled;
+            loadingIndicator.classList.toggle('hidden', !disabled);
+        }
+    
+        /**
+         * Manipulador para o envio do formulário.
+         * @param {Event} event - O evento de submit.
+         */
+        async function handleFormSubmit(event) {
+            event.preventDefault(); // Impede o recarregamento da página
+            
+            const userQuery = messageInput.value.trim();
+            if (!userQuery) return; // Não faz nada se a entrada estiver vazia
+    
+            // 1. Adicionar a pergunta do usuário ao chat
+            addMessageToChat('user', userQuery);
+            
+            // 2. Limpar o campo de entrada e desabilitar o formulário
+            messageInput.value = '';
+            setFormDisabled(true);
+    
+            try {
+                // 3. Preparar e enviar a requisição para a API
+                const payload = {
+                    contents: [{ 
+                        parts: [{ text: userQuery }] 
+                    }],
+                    systemInstruction: {
+                        parts: [{ text: systemPrompt }]
+                    }
+                };
+    
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+    
+                if (!response.ok) {
+                     // Tenta ler a mensagem de erro da API
+                    const errorData = await response.json().catch(() => null);
+                    if (errorData && errorData.error && errorData.error.message.includes("API key not valid")) {
+                        throw new Error("Chave de API inválida ou mal configurada. (Lembre-se do alerta de segurança sobre o backend!)");
+                    }
+                    throw new Error(`Erro na API: ${response.statusText}`);
+                }
+    
+                const result = await response.json();
+                
+                // 4. Extrair e exibir a resposta da IA
+                const aiResponse = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                
+                if (aiResponse) {
+                    addMessageToChat('ia', aiResponse);
+                } else {
+                    addMessageToChat('ia', 'Desculpe, não consegui encontrar uma resposta. Verifique a resposta da API.');
+                    console.error('Resposta inesperada da API:', result);
+                }
+    
+            } catch (error) {
+                // 5. Lidar com erros
+                console.error('Erro ao chamar a API do Gemini:', error);
+                addMessageToChat('ia', `Ocorreu um erro: ${error.message}.`);
+            } finally {
+                // 6. Reabilitar o formulário
+                setFormDisabled(false);
+                messageInput.focus(); // Foca no campo de entrada novamente
+            }
+        }
+    
+        // --- Event Listeners ---
+        chatForm.addEventListener('submit', handleFormSubmit);
+    
+        // Foca no campo de entrada ao carregar a página
+        window.onload = () => {
+            messageInput.focus();
+        };
+    
+    </script>
+
+</body>
+</html>
